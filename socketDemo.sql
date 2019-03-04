@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `UserPost` (
 --
 
 INSERT INTO `UserPost` (`UserPostId`, `UserPostContent`) VALUES
-(1, 'This is test comment.');
+(1, 'This is a test comment.');
 
 --
 -- Indexes for dumped tables

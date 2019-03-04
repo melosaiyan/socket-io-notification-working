@@ -5,9 +5,16 @@
 	<body>
 		<div id="status">
 		</div>
+		<div id="user-login">
+			<h2>Login:</h2>
+			<input type = "text" id = "loginname" size = "40" placeholder="What's your username?"><br>
+			<input type = "button" id = "addUser" value = "Add User"><br>
+			<span id = "message1"></span>
+		</div>
 		<div id="comment">
-			<input type = "text" id = "name" size = "40"><br>
-			<textarea cols = "30" rows = "10" id = "commentText"></textarea><br>
+			<h2>Add Comment:</h2>
+			<input type = "text" id = "name" size = "40" placeholder="Send to.. (leave blank to notify everyone)"><br>
+			<textarea cols = "30" rows = "10" id = "commentText" placeholder="Enter comment."></textarea><br>
 			<input type = "button" id = "addComment" value = "Comment"><br>
 			<span id = "message"></span>
 		</div>
@@ -17,6 +24,7 @@
 	<script>
 		$(document).ready(function(){
 			var socket = io();
+			var UserNameLogin = "";
 			$.get("/getStatus",function(data){
 				if(data.error) {
 					$("#message").empty().text(data.message);
@@ -27,19 +35,37 @@
 			$("#addComment").click(function(event){
 				var userName = $("#name").val();
 				var userComment = $("#commentText").val();
-				if(userName === "" || userComment === "") {
+				//if(userName === "" || userComment === "") {
+                if(userComment === "") {
 					alert("Please fill the form.");
 					return;
 				}
-				socket.emit('comment added',{user : userName, comment : userComment});
+
+				socket.emit('comment added',{fromUser : userNameLogin === "" ? 'Guest' : userNameLogin, toUser: userName, comment : userComment});
+		});
+			$("#addUser").click(function(event){
+				userNameLogin = $("#loginname").val();
+				socket.emit('user validate', {userNameLogin1: userNameLogin});
 		});
             socket.on('notify everyone',function(msg){
-                notifyMe(msg.user,msg.comment);
+                notifyMe(msg.fromUser,msg.toUser, msg.comment);
+            });
+            socket.on('username result',function(msg){
+                //notifyMe(msg.user,msg.comment);
+                if(msg.userResult === 0 && msg.loginUser === userNameLogin) {
+                    userNameLogin = "";
+                    $( "#status" ).html( "<b>User does not exist</b>" );
+                } else {
+                    $( "#status" ).html(function() {
+                        return "<b>" + userNameLogin + " has logged in!";
+                    });
+				}
+
             });
 
 		});
 		
-		function notifyMe(user,message) {
+		function notifyMe(fromUser,toUser,message) {
 		  // Let's check if the browser supports notifications
 		  if (!("Notification" in window)) {
 			alert("This browser does not support desktop notification");
@@ -48,10 +74,14 @@
 		  else if (Notification.permission === "granted") {
 			// If it's okay let's create a notification
 		  var options = {
-				body: user + " Posted a comment: " + message,
+				body: fromUser + " Posted a comment: " + message,
 				dir : "ltr"
 			};
-		  var notification = new Notification("Hi there",options);
+
+		  if((userNameLogin === toUser || toUser === "") && userNameLogin !== fromUser ){
+              var notification = new Notification("Hi there", options);
+          }
+
 		  }
 		  // Otherwise, we need to ask the user for permission
 		  // Note, Chrome does not implement the permission static property
@@ -65,10 +95,12 @@
 			  // If the user is okay, let's create a notification
 			  if (permission === "granted") {
 				var options = {
-					body: user + "Posted a comment" + message,
+					body: fromUser + "Posted a comment" + message,
 					dir : "ltr"
 				  };
-				var notification = new Notification("New comment added.",options);
+                  if(userNameLogin === toUser || toUser === "") {
+                      var notification = new Notification("New comment added.", options);
+                  }
 			  }
 			});
 		  }
