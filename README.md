@@ -13,4 +13,10 @@ Slight modifications to get working code from the tutorial will be in the "socke
 
 Other branches, including master, is for my personal development experience and to use the initial socket.io app to extend or implement certain functionality of my choosing.
 
+**Branches:**
+master
+socketDemo (With working example from original tutorial)
+sql-server (implements socketDemo with SQL server module and push notifications to certain logged in users)
+sessions (WORK IN PROGRESS - Adding true session management)
+
 If any questions on my projects, feel free to email me: brian.urbina@outlook.com
