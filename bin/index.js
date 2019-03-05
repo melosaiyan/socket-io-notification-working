@@ -12,6 +12,7 @@ var mspool = {
 	user: 'melosaiyan',
 	password: 'S5p6u7r8$',
 	server: 'localhost',
+    port: 1435,
 	database: 'testnotify',
     pool: {
         max: 100,
